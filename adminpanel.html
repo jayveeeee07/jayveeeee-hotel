@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel - Jayvee Hall of Mansion</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+<nav>
+<ul>
+<li><a href="home.html">HOME</a></li>
+<li><a href="home.html#rooms">ROOM</a></li>
+<li><a href="cart.html">CART</a></li>
+<li><a href="message.html">MESSAGE</a></li>
+<li><a href="notification.html">NOTIFICATION</a></li>
+</ul>
+</nav>
+<h2>Administrator Dashboard</h2>
+</header>
+<main>
+<h3>Registered Users</h3>
+<div id="usersTable"></div>
+
+<h3>Booking Requests</h3>
+<div id="bookingTable"></div>
+
+<h3>Messages from Users</h3>
+<div id="messagesTable"></div>
+</main>
+<footer>
+<p>Admin panel: Approve bookings, manage users, reply messages.</p>
+</footer>
+<script>
+async function loadUsers(){
+    const res = await fetch('api/getUsers.php');
+    const users = await res.json();
+    let html = '<table><tr><th>Photo</th><th>Name</th><th>Email</th><th>Contact</th><th>Status</th></tr>';
+    users.forEach(u => {
+        html += `<tr>
+        <td><img src="${u.photo}" width="50"></td>
+        <td>${u.name}</td>
+        <td>${u.email}</td>
+        <td>${u.contact}</td>
+        <td>${u.status}</td>
+        </tr>`;
+    });
+    html += '</table>';
+    document.getElementById('usersTable').innerHTML = html;
+}
+
+async function loadBookings(){
+    const res = await fetch('api/getBookings.php');
+    const bookings = await res.json();
+    let html = '<table><tr><th>Image</th><th>Name</th><th>Date In</th><th>Date Out</th><th>Payment</th><th>Proof</th><th>Status</th><th>Action</th></tr>';
+    bookings.forEach(b => {
+        html += `<tr>
+        <td><img src="${b.room_image}" width="50"></td>
+        <td>${b.full_name}</td>
+        <td>${b.date_in}</td>
+        <td>${b.date_out}</td>
+        <td>${b.payment_method} - ${b.price}</td>
+        <td><a href="${b.proof}" target="_blank">View</a></td>
+        <td>${b.status}</td>
+        <td>
+            <button onclick="updateBooking(${b.id},'Approved')">Approve</button>
+            <button onclick="updateBooking(${b.id},'Rejected')">Reject</button>
+        </td>
+        </tr>`;
+    });
+    html += '</table>';
+    document.getElementById('bookingTable').innerHTML = html;
+}
+
+async function loadMessages(){
+    const res = await fetch('api/getMessages.php');
+    const messages = await res.json();
+    let html = '<table><tr><th>Date</th><th>Name</th><th>Email</th><th>Message</th><th>Reference</th><th>Reply</th></tr>';
+    messages.forEach(m => {
+        html += `<tr>
+        <td>${m.date}</td>
+        <td>${m.name}</td>
+        <td>${m.email}</td>
+        <td>${m.message}</td>
+        <td>${m.ref}</td>
+        <td><textarea id="reply_${m.id}"></textarea><button onclick="sendReply(${m.id})">Send</button></td>
+        </tr>`;
+    });
+    html += '</table>';
+    document.getElementById('messagesTable').innerHTML = html;
+}
+
+async function updateBooking(id,status){
+    await fetch('api/updateBooking.php',{method:'POST', body: JSON.stringify({id,status})});
+    loadBookings();
+}
+
+async function sendReply(id){
+    const reply = document.getElementById(`reply_${id}`).value;
+    await fetch('api/sendReply.php',{method:'POST', body: JSON.stringify({id,reply})});
+    alert('Reply sent!');
+}
+
+loadUsers();
+loadBookings();
+loadMessages();
+</script>
+</body>
+  </html>
