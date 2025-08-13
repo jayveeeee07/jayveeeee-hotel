@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Booking - Jayvee Hall</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+<h2>Reservation Form</h2>
+</header>
+<main>
+<div id="roomDetails"></div>
+<form id="bookingForm" enctype="multipart/form-data">
+<input type="hidden" id="roomId">
+<label>Full Name:</label><input type="text" id="fullName" required><br>
+<label>Face Scan / Upload:</label><input type="file" id="faceScan" required><br>
+<label>Date Check In:</label><input type="date" id="dateIn" required><br>
+<label>Date Check Out:</label><input type="date" id="dateOut" required><br>
+<label>Payment Method:</label>
+<select id="paymentMethod" required>
+<option value="cash">Cash</option>
+<option value="online">Online</option>
+</select><br>
+<label>Proof of Payment:</label><input type="file" id="proof" required><br>
+<button type="submit">Confirm</button>
+<button type="button" onclick="cancelBooking()">Cancel</button>
+</form>
+</main>
+<footer>
+<p>Secure your booking and enjoy your stay at Jayvee Hall.</p>
+</footer>
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const roomId = urlParams.get('room') || urlParams.get('cart');
+document.getElementById('roomId').value = roomId;
+
+async function loadRoom(){
+    const res = await fetch(`api/getRooms.php?id=${roomId}`);
+    const room = await res.json();
+    document.getElementById('roomDetails').innerHTML = `
+        <h3>${room.name}</h3>
+        <p>Price: ${room.price}</p>
+        <p>Room Number: ${room.room_number}</p>
+        <p>${room.description}</p>`;
+}
+loadRoom();
+
+document.getElementById('bookingForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append('room_id', roomId);
+    formData.append('full_name', document.getElementById('fullName').value);
+    formData.append('face_scan', document.getElementById('faceScan').files[0]);
+    formData.append('date_in', document.getElementById('dateIn').value);
+    formData.append('date_out', document.getElementById('dateOut').value);
+    formData.append('payment_method', document.getElementById('paymentMethod').value);
+    formData.append('proof', document.getElementById('proof').files[0]);
+
+    await fetch('api/bookRoom.php', {method:'POST', body: formData});
+    alert('Booking submitted!');
+    window.location.href='notification.html';
+});
+
+function cancelBooking(){
+    window.history.back();
+}
+</script>
+</body>
+</html>
