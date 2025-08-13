@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cart - Jayvee Hall</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+<nav>
+<ul>
+<li><a href="home.html">HOME</a></li>
+<li><a href="home.html#rooms">ROOM</a></li>
+<li><a href="cart.html">CART</a></li>
+<li><a href="message.html">MESSAGE</a></li>
+<li><a href="notification.html">NOTIFICATION</a></li>
+<li><a href="adminpanel.html">ADMIN</a></li>
+</ul>
+</nav>
+<h2>Your Cart List</h2>
+</header>
+<main>
+<div id="cartList"></div>
+</main>
+<footer>
+<p>Manage your selected rooms here before booking.</p>
+</footer>
+<script>
+async function loadCart() {
+    const res = await fetch('api/getCart.php');
+    const cart = await res.json();
+    const container = document.getElementById('cartList');
+    container.innerHTML = '';
+    cart.forEach(item => {
+        container.innerHTML += `
+        <div class="cart-item">
+            <h3>${item.name}</h3>
+            <p>Price: ${item.price}</p>
+            <p>Room Number: ${item.room_number}</p>
+            <button onclick="removeFromCart(${item.id})">Not Interested</button>
+            <button onclick="bookNow(${item.id})">Book Now</button>
+        </div>`;
+    });
+}
+
+function removeFromCart(cartId){
+    fetch('api/removeFromCart.php', {method:'POST', body:JSON.stringify({id: cartId})});
+    loadCart();
+}
+
+function bookNow(cartId){
+    window.location.href = `booking.html?cart=${cartId}`;
+}
+
+loadCart();
+</script>
+</body>
+  </html>
