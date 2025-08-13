@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home - Jayvee Hall of Mansion</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <nav>
+    <ul>
+      <li><a href="home.html">HOME</a></li>
+      <li><a href="home.html#rooms">ROOM</a></li>
+      <li><a href="cart.html">CART</a></li>
+      <li><a href="message.html">MESSAGE</a></li>
+      <li><a href="notification.html">NOTIFICATION</a></li>
+      <li><a href="adminpanel.html">ADMIN</a></li>
+    </ul>
+  </nav>
+  <h2>Welcome to Jayvee Hall of Mansion Dashboard</h2>
+</header>
+
+<main id="rooms">
+  <div id="roomList" class="grid-container">
+    <!-- Rooms will be loaded here via JS -->
+  </div>
+</main>
+
+<footer>
+  <p>Experience luxury and comfort at Jayvee Hall of Mansion with every stay.</p>
+</footer>
+
+<script>
+async function loadRooms() {
+    const res = await fetch('api/getRooms.php');
+    const rooms = await res.json();
+    const container = document.getElementById('roomList');
+    rooms.forEach(room => {
+        container.innerHTML += `
+            <div class="room-card">
+                <img src="assets/${room.image}" alt="${room.name}">
+                <h3>${room.name}</h3>
+                <p>Price: ${room.price}</p>
+                <p>Room Number: ${room.room_number}</p>
+                <p>${room.description}</p>
+                <button onclick="addToCart(${room.id})">Interested</button>
+                <button onclick="bookRoom(${room.id})">Book Now</button>
+            </div>
+        `;
+    });
+}
+
+function addToCart(roomId){
+    fetch('api/addToCart.php', {method:'POST', body:JSON.stringify({room_id: roomId})});
+    alert('Room added to cart!');
+}
+
+function bookRoom(roomId){
+    window.location.href = `booking.html?room=${roomId}`;
+}
+
+loadRooms();
+</script>
+</body>
+</html>
